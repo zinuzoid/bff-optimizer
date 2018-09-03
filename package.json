@@ -8,15 +8,16 @@
     "react-dom": "^16.4.2",
     "react-scripts": "1.1.5"
   },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom",
-    "eject": "react-scripts eject"
-  },
   "devDependencies": {
     "firebase-bolt": "^0.8.4",
     "firebase-tools": "^4.2.1",
     "flow-bin": "^0.80.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "firebase-deploy": "firebase-bolt database.rules.bolt && firebase deploy"
   }
 }
