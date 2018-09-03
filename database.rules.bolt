@@ -1,0 +1,10 @@
+path /events {
+  read() { true }
+  write() { true }
+}
+path /events/{eventId} {
+  path /info {
+    read() { true }
+    write() { true }
+  }
+}
