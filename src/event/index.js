@@ -161,6 +161,7 @@ class Event extends Component {
           <div>
             <header>
               <h1>#fblonbff budget optimizer</h1>
+              <h1>PIN: {this.eventId}</h1>
             </header>
             {this.state.loading ? <Loading/> : this._renderAfterAuth()}
           </div>
