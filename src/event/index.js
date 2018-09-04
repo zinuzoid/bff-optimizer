@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {InternalPageLayout, Loading, TextField, Button} from '../ui';
+import {InternalPageLayout, Loading, TextField, Button, Panel} from '../ui';
 import firebase from '../firebase';
 
 const _ = require('lodash');
@@ -71,10 +71,13 @@ class Event extends Component {
       return <Loading/>;
     }
     const data = this.state.data.val();
+    let totalPrice = 0;
     _.forEach(data.items, (v, k) => {
       v.id = k;
+      totalPrice += Number(v.price);
     });
     const peopleCnt = this._parsePeopleCnt(data);
+    const leftOverBudget = (25 * peopleCnt) - (totalPrice * 1.125);
 
     const groupByOwner = _.groupBy(data.items, item => item.created_by);
 
@@ -82,20 +85,56 @@ class Event extends Component {
       groupByOwner[k].total = v.reduce((prev, curr) => {
         return Number(prev) + Number(curr.price);
       }, 0);
+      groupByOwner[k].name = data.members[k].name;
+    });
+
+    const rows = [];
+
+    _.forEach(groupByOwner, (v, k) => {
+      const totalPerPeople = (v.total * 1.125).toFixed(2);
+      rows.push((<tr style={{paddingTop: 4}}>
+        <th style={{
+          textAlign: 'left',
+          padding: 8,
+          paddingLeft: 4,
+        }}>{v.name}</th>
+        <th style={{
+          textAlign: 'right',
+          padding: 8,
+          paddingLeft: 4,
+          color: totalPerPeople > 25 ? 'red' : 'green',
+        }}>£{totalPerPeople}{totalPerPeople > 25
+            ? <span>{' (over '}{totalPerPeople - 25}{')'}</span>
+            : null}</th>
+      </tr>));
+      v.forEach(item => {
+        rows.push((<tr style={{borderBottom: '1px solid #333', color: '#ccc'}}>
+          <td style={{
+            textAlign: 'left', padding: 4, paddingLeft: 16,
+          }}>{item.name}</td>
+          <td style={{textAlign: 'right', padding: 4}}>£{Number(item.price).toFixed(2)}</td>
+        </tr>));
+      });
     });
 
     return (
         <div>
-          <p>{peopleCnt}</p>
-          { Object.keys(groupByOwner).map(owner => {
-            return (
-                <div key={owner}>
-                  <p>{owner} {groupByOwner[owner].total}</p>
-                  {groupByOwner[owner].map(item => {
-                    return <p key={item.id}>{item.price} - {item.name}</p>;
-                  })}
-                </div>);
-          })}
+          <Panel title="Overall" style={{marginTop: 20}}>
+            <p>People = {peopleCnt} Budget = £{25 * peopleCnt}</p>
+            <p>Spent = {totalPrice.toFixed(2)}</p>
+            <p>Team leftover budget = </p><p
+              style={{
+                fontSize: 30,
+                color: leftOverBudget > 0 ? 'green' : 'red',
+              }}>£{leftOverBudget.toFixed(2)}</p>
+          </Panel>
+          <Panel title="Individual" style={{marginTop: 20}}>
+            <table style={{width: '100%', borderCollapse: 'collapse'}}>
+              <tbody>
+              {rows}
+              </tbody>
+            </table>
+          </Panel>
         </div>
     );
   }

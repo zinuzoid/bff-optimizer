@@ -64,7 +64,7 @@ export const BoxItem = styled('div')()
 export class Panel extends React.Component<{ title: string }> {
   render() {
     return (
-      <Fieldset>
+      <Fieldset {...this.props}>
         <legend>{this.props.title}</legend>
         {this.props.children}
       </Fieldset>
