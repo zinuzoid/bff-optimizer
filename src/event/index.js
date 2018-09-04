@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import {InternalPageLayout, Loading, TextField, Button} from '../ui';
 import firebase from '../firebase';
 
+const _ = require('lodash');
+
 const database = firebase.database();
 
 class Event extends Component {
@@ -12,6 +14,7 @@ class Event extends Component {
       price: '',
       name: '',
       user: null,
+      data: null,
     };
 
     this.eventId = this.props.match.params.eventId;
@@ -26,14 +29,27 @@ class Event extends Component {
     if (!firebase.auth().currentUser) {
       firebase.auth().signInAnonymously();
       firebase.auth().onAuthStateChanged(user => {
-        this.setState({
-          user,
-          loading: false,
-        });
+        if (user) {
+          this.setState({
+            user,
+            loading: false,
+          });
+          this._startListen();
+        }
       });
     } else {
       this.setState({user: firebase.auth().currentUser, loading: false});
+      this._startListen();
     }
+  }
+
+  _startListen() {
+    database.ref(`events/${this.eventId}`).on('value', snapshot => {
+      if (!(this.state.user.uid in snapshot.val().members)) {
+        this.props.history.push('/');
+      }
+      this.setState({data: snapshot});
+    });
   }
 
   _renderAfterAuth() {
@@ -44,8 +60,48 @@ class Event extends Component {
           <TextField size={10} style={{fontSize: 35}} placeholder="name"
                      onChange={this._changeName} value={this.state.name}/>
           <Button style={{fontSize: 20}} onClick={this._onAdd}>+</Button>
+
+          {this._renderData()}
         </div>
     );
+  }
+
+  _renderData() {
+    if (!this.state.data) {
+      return <Loading/>;
+    }
+    const data = this.state.data.val();
+    _.forEach(data.items, (v, k) => {
+      v.id = k;
+    });
+    const peopleCnt = this._parsePeopleCnt(data);
+
+    const groupByOwner = _.groupBy(data.items, item => item.created_by);
+
+    _.forEach(groupByOwner, (v, k) => {
+      groupByOwner[k].total = v.reduce((prev, curr) => {
+        return Number(prev) + Number(curr.price);
+      }, 0);
+    });
+
+    return (
+        <div>
+          <p>{peopleCnt}</p>
+          { Object.keys(groupByOwner).map(owner => {
+            return (
+                <div key={owner}>
+                  <p>{owner} {groupByOwner[owner].total}</p>
+                  {groupByOwner[owner].map(item => {
+                    return <p key={item.id}>{item.price} - {item.name}</p>;
+                  })}
+                </div>);
+          })}
+        </div>
+    );
+  }
+
+  _parsePeopleCnt(data) {
+    return Object.keys(data).length;
   }
 
   render() {
@@ -82,7 +138,7 @@ class Event extends Component {
       created_at: firebase.database.ServerValue.TIMESTAMP,
       created_by: this.state.user.uid,
       name,
-      price,
+      price: Number(price),
     });
   }
 }
