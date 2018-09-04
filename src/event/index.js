@@ -57,7 +57,7 @@ class Event extends Component {
         <div>
           <TextField size={5} style={{fontSize: 35}} placeholder="£"
                      onChange={this._changePrice} value={this.state.price}/>
-          <TextField size={10} style={{fontSize: 35}} placeholder="name"
+          <TextField size={10} style={{fontSize: 35}} placeholder="menu"
                      onChange={this._changeName} value={this.state.name}/>
           <Button style={{fontSize: 20}} onClick={this._onAdd}>+</Button>
 
@@ -89,6 +89,16 @@ class Event extends Component {
     });
 
     const rows = [];
+    rows.push((<tr>
+      <th></th>
+      <th style={{
+        textAlign: 'right',
+        fontSize: 10,
+        fontWeight: 'normal',
+        color: '#666',
+      }}>+12.5%
+      </th>
+    </tr>));
 
     _.forEach(groupByOwner, (v, k) => {
       const totalPerPeople = (v.total * 1.125).toFixed(2);
@@ -102,6 +112,7 @@ class Event extends Component {
           textAlign: 'right',
           padding: 8,
           paddingLeft: 4,
+          paddingRight: 4,
           color: totalPerPeople > 25 ? 'red' : 'green',
         }}>£{totalPerPeople}{totalPerPeople > 25
             ? <span>{' (over '}{totalPerPeople - 25}{')'}</span>
@@ -112,7 +123,8 @@ class Event extends Component {
           <td style={{
             textAlign: 'left', padding: 4, paddingLeft: 16,
           }}>{item.name}</td>
-          <td style={{textAlign: 'right', padding: 4}}>£{Number(item.price).toFixed(2)}</td>
+          <td style={{textAlign: 'right', padding: 4}}>£{(Number(item.price) *
+              1.125).toFixed(2)}</td>
         </tr>));
       });
     });
@@ -121,7 +133,7 @@ class Event extends Component {
         <div>
           <Panel title="Overall" style={{marginTop: 20}}>
             <p>People = {peopleCnt} Budget = £{25 * peopleCnt}</p>
-            <p>Spent = {totalPrice.toFixed(2)}</p>
+            <p>Spent = {(totalPrice * 1.125).toFixed(2)}</p>
             <p>Team leftover budget = </p><p
               style={{
                 fontSize: 30,
@@ -140,7 +152,7 @@ class Event extends Component {
   }
 
   _parsePeopleCnt(data) {
-    return Object.keys(data).length;
+    return Object.keys(data.members).length;
   }
 
   render() {

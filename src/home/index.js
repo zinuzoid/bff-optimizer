@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {Redirect} from 'react-router-dom';
 import {
   InternalPageLayout,
   Loading,
@@ -66,13 +65,6 @@ class Home extends Component {
                   style={bigButtonStyle}>I&apos;m Guest</Button>
           <Button onClick={() => this._goEvent(true)}
                   style={bigButtonStyle}>I&apos;m Host</Button>
-          <div>
-            <Button onClick={() => this._onClick()} danger>TRUNCATE</Button>
-            <Button onClick={() => this._newItem()}
-                    disabled={!this.state.eventId}>New Item
-            </Button>
-            <Button onClick={() => this._newRef()}>New Ref</Button>
-          </div>
         </InternalPageLayout>
     );
   }
@@ -88,13 +80,6 @@ class Home extends Component {
           </div>
         </InternalPageLayout>
     );
-  }
-
-  _onClick() {
-    const user = firebase.auth().currentUser;
-    if (user) {
-      database.ref('events').remove();
-    }
   }
 
   _newEvent() {
@@ -122,21 +107,6 @@ class Home extends Component {
         platform: JSON.parse(JSON.stringify(platform)),
       },
     }).then(() => eventId);
-  }
-
-  _newRef() {
-
-  }
-
-  _newItem() {
-    const newItem = database.ref(`events/${this.state.eventId}/items`).
-        push();
-    newItem.set({
-      created_at: firebase.database.ServerValue.TIMESTAMP,
-      created_by: this.state.user.uid,
-      name: 'Jim',
-    });
-    console.log(newItem.key);
   }
 
   _goEvent(isHost) {
