@@ -7,4 +7,12 @@ path /events/{eventId} {
     read() { true }
     write() { true }
   }
+  path /items {
+    read() { true }
+    write() { true }
+  }
+  path /members {
+    read() { true }
+    write() { true }
+  }
 }
